@@ -54,12 +54,9 @@ jobs:
         
         # Test if CLI runs (basic help/version check)
         echo "Testing CLI accessibility..."
-        if $CLI_EXECUTABLE --help 2>/dev/null || $CLI_EXECUTABLE -h 2>/dev/null || $CLI_EXECUTABLE --version 2>/dev/null; then
-          echo "✅ Defender CLI downloaded and accessible"
-        else
-          echo "⚠️ Defender CLI downloaded but may need authentication/configuration"
-        fi
-        
+        echo "Defender CLI Help"
+        $CLI_EXECUTABLE --help
+
         # Run the actual scan command
         echo "Running Defender scan command..."
         echo "Command: $CLI_EXECUTABLE scan image ${{ vars.ARTIFACT_NAME }}:latest"
@@ -79,9 +76,3 @@ jobs:
       run: |
         echo "Placeholder for uploading Defender CLI scan results"
         echo "Results would be uploaded as artifacts here once scan is properly configured"
-
-    - name: Defender CLI help
-      if: always()
-      run: |
-        echo "Defender CLI Help"
-        $CLI_EXECUTABLE --help
