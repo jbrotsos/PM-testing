@@ -33,74 +33,11 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
         
-    - name: Detect OS and Architecture
-      id: detect-os
-      run: |
-        OS=$(echo "$RUNNER_OS" | tr '[:upper:]' '[:lower:]')
-        ARCH=$(uname -m)
-        
-        # Map GitHub runner OS to Defender CLI naming
-        case "$OS" in
-          "linux")
-            DEFENDER_OS="linux"
-            ;;
-          "windows")
-            DEFENDER_OS="win"
-            ;;
-          "macos")
-            DEFENDER_OS="osx"
-            ;;
-          *)
-            DEFENDER_OS="linux"  # Default fallback
-            ;;
-        esac
-        
-        # Map architecture to Defender CLI naming
-        case "$ARCH" in
-          "x86_64"|"amd64")
-            DEFENDER_ARCH="x64"
-            ;;
-          "aarch64"|"arm64")
-            DEFENDER_ARCH="arm64"
-            ;;
-          "i386"|"i686")
-            DEFENDER_ARCH="x86"
-            ;;
-          *)
-            DEFENDER_ARCH="x64"  # Default fallback
-            ;;
-        esac
-        
-        # Determine file extension
-        if [ "$DEFENDER_OS" = "win" ]; then
-          EXTENSION=".exe"
-        else
-          EXTENSION=""
-        fi
-        
-        DEFENDER_FILENAME="Defender_${DEFENDER_OS}-${DEFENDER_ARCH}${EXTENSION}"
-        DOWNLOAD_URL="https://dfdclirelease-fde-c4fjdhc6dcceetet.b02.azurefd.net/public/latest/Defender_linux-x64"
-        
-        echo "os=$DEFENDER_OS" >> $GITHUB_OUTPUT
-        echo "arch=$DEFENDER_ARCH" >> $GITHUB_OUTPUT
-        echo "filename=$DEFENDER_FILENAME" >> $GITHUB_OUTPUT
-        echo "download_url=$DOWNLOAD_URL" >> $GITHUB_OUTPUT
-        echo "extension=$EXTENSION" >> $GITHUB_OUTPUT
-        
-        echo "Detected OS: $DEFENDER_OS"
-        echo "Detected Architecture: $DEFENDER_ARCH"
-        echo "Defender CLI filename: $DEFENDER_FILENAME"
-        echo "Download URL: $DOWNLOAD_URL"
-        
     - name: Download Defender CLI
       run: |
-        echo "Downloading Defender CLI from: ${{ steps.detect-os.outputs.download_url }}"
-        curl -L -o defender-cli${{ steps.detect-os.outputs.extension }} "${{ steps.detect-os.outputs.download_url }}"
-        
-        # Make executable if not Windows
-        if [ "${{ steps.detect-os.outputs.extension }}" != ".exe" ]; then
-          chmod +x defender-cli
-        fi
+        echo "Downloading Defender CLI 
+        curl -L -o defender-cli "https://dfdclirelease-fde-c4fjdhc6dcceetet.b02.azurefd.net/public/latest/Defender_linux-x64"
+        chmod +x defender-cli
         
         # Verify download
         ls -la defender-cli*
@@ -110,11 +47,8 @@ jobs:
         echo "Running Defender CLI scan..."
         
         # Set the CLI executable name
-        if [ "${{ steps.detect-os.outputs.extension }}" = ".exe" ]; then
-          CLI_EXECUTABLE="./defender-cli.exe"
-        else
-          CLI_EXECUTABLE="./defender-cli"
-        fi
+
+        CLI_EXECUTABLE="./defender-cli"
         
         echo "Defender CLI executable: $CLI_EXECUTABLE"
         
@@ -145,3 +79,9 @@ jobs:
       run: |
         echo "Placeholder for uploading Defender CLI scan results"
         echo "Results would be uploaded as artifacts here once scan is properly configured"
+
+    - name: Defender CLI help
+      if: always()
+      run: |
+        echo "Defender CLI Help"
+        $CLI_EXECUTABLE --help
