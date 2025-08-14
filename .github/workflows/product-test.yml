@@ -40,7 +40,7 @@ jobs:
         chmod +x defender-cli
         
         # Verify download
-        ls -la defender-cli*
+        ls -la defender-cli
         
     - name: Run Defender CLI Scan
       run: |
