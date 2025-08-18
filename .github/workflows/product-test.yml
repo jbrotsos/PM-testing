@@ -63,7 +63,7 @@ jobs:
         echo "Command: $CLI_EXECUTABLE scan image ${{ vars.ARTIFACT_NAME }}:latest"
         
         # Execute the scan command (may fail without proper authentication)
-        $CLI_EXECUTABLE scan image ${{ vars.ARTIFACT_NAME }}:latest || {
+        $CLI_EXECUTABLE scan image ${{ vars.ARTIFACT_NAME }}:latest --scanner MDVM || {
           echo "❌ Scan command failed - this may be due to:"
           echo "1. Missing authentication credentials"
           echo "2. Network connectivity issues" 
