@@ -56,7 +56,7 @@ jobs:
         # Test if CLI runs (basic help/version check)
         echo "Testing CLI accessibility..."
         echo "Defender CLI Help"
-        $CLI_EXECUTABLE --help
+        $CLI_EXECUTABLE --version
 
         # Run the actual scan command
         echo "Running Defender scan command..."
