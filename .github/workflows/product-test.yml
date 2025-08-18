@@ -39,9 +39,6 @@ jobs:
         curl -L -o defender "https://dfddefendercli-afdendpoint-dogfood-ahgnapadd4eecdbr.z01.azurefd.net/public/latest/Defender_linux-x64"
         chmod +x defender
         
-        # Verify download
-        ls -la defender
-        
     - name: Run Defender CLI Scan
       run: |
         echo "Running Defender CLI scan..."
@@ -59,7 +56,7 @@ jobs:
         # Test if CLI runs (basic help/version check)
         echo "Testing CLI accessibility..."
         echo "Defender CLI Help"
-        $CLI_EXECUTABLE help
+        $CLI_EXECUTABLE --help
 
         # Run the actual scan command
         echo "Running Defender scan command..."
