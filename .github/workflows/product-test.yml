@@ -48,10 +48,19 @@ jobs:
     - name: Run Defender Help
       run: ./defender --help
       
-    - name: Run Defender CLI Scan
+    - name: Run Defender CLI Scan (Default)
       run: |
-        # $CLI_EXECUTABLE scan image ${{ vars.ARTIFACT_NAME }}:latest --scanner mdvm || {
         ./defender scan image vuln/testdocker:latest --scanner MDVM 
+      env:
+        DFD_BACKEND_ENVIRONMENT: "PPE"
+        GDN_NUGET_SOURCE_FEED_OVERRIDE: "https://pkgs.dev.azure.com/msdoustest/msdo/_packaging/msdotestfeed2/nuget/v3/index.json"
+        GDN_MDC_CLI_TENANT_ID: ${{ secrets.GDN_MDC_CLI_TENANT_ID }}
+        GDN_MDC_CLI_CLIENT_ID: ${{ secrets.GDN_MDC_CLI_CLIENT_ID }}
+        GDN_MDC_CLI_CLIENT_SECRET: ${{ secrets.GDN_MDC_CLI_CLIENT_SECRET }}
+
+    - name: Run Defender CLI Scan (Built)
+      run: |
+        ./defender scan image ${{ vars.ARTIFACT_NAME }}:latest --scanner MDVM
       env:
         DFD_BACKEND_ENVIRONMENT: "PPE"
         GDN_NUGET_SOURCE_FEED_OVERRIDE: "https://pkgs.dev.azure.com/msdoustest/msdo/_packaging/msdotestfeed2/nuget/v3/index.json"
