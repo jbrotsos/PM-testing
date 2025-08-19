@@ -66,7 +66,7 @@ jobs:
         ./defender scan image ${{ vars.ARTIFACT_NAME }}:latest --scanner MDVM
       env:
         DFD_BACKEND_ENVIRONMENT: "PPE"
-        GDN_NUGET_SOURCE_FEED_OVERRIDE: "https://pkgs.dev.azure.com/msdoustest/msdo/_packaging/msdotestfeed2/nuget/v3/index.json"
+        #GDN_NUGET_SOURCE_FEED_OVERRIDE: "https://pkgs.dev.azure.com/msdoustest/msdo/_packaging/msdotestfeed2/nuget/v3/index.json"
         GDN_MDC_CLI_TENANT_ID: "dad46ef7-083d-488a-bd4b-8926fc7f83a1" #${{ secrets.GDN_MDC_CLI_TENANT_ID }}
         GDN_MDC_CLI_CLIENT_ID: "42e28c99-6d63-4202-b7fd-253687bab74a" #${{ secrets.GDN_MDC_CLI_CLIENT_ID }}
         GDN_MDC_CLI_CLIENT_SECRET: "_0j8Q~dgGom849PyetMvB2rigs_Cvv4b~8GcqdBk" #${{ secrets.GDN_MDC_CLI_CLIENT_SECRET }}
