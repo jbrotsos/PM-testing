@@ -50,7 +50,7 @@ jobs:
       
     - name: Run Defender CLI Scan (Default)
       run: |
-        ./defender scan image vuln/testdocker:latest --scanner MDVM 
+        ./defender scan image vuln/testdocker:latest --scanner mdvm
       env:
         DFD_BACKEND_ENVIRONMENT: "PPE"
         GDN_NUGET_SOURCE_FEED_OVERRIDE: "https://pkgs.dev.azure.com/msdoustest/msdo/_packaging/msdotestfeed2/nuget/v3/index.json"
