@@ -44,9 +44,21 @@ jobs:
 
     - name: Run Defender Version
       run: ./defender --version
+      env:
+        DFD_BACKEND_ENVIRONMENT: "PPE"
+        GDN_NUGET_SOURCE_FEED_OVERRIDE: "https://pkgs.dev.azure.com/msdoustest/msdo/_packaging/msdotestfeed2/nuget/v3/index.json"
+        GDN_MDC_CLI_TENANT_ID: ${{ secrets.GDN_MDC_CLI_TENANT_ID }}
+        GDN_MDC_CLI_CLIENT_ID: ${{ secrets.GDN_MDC_CLI_CLIENT_ID }}
+        GDN_MDC_CLI_CLIENT_SECRET: ${{ secrets.GDN_MDC_CLI_CLIENT_SECRET }}
 
     - name: Run Defender Help
       run: ./defender --help
+      env:
+        DFD_BACKEND_ENVIRONMENT: "PPE"
+        GDN_NUGET_SOURCE_FEED_OVERRIDE: "https://pkgs.dev.azure.com/msdoustest/msdo/_packaging/msdotestfeed2/nuget/v3/index.json"
+        GDN_MDC_CLI_TENANT_ID: ${{ secrets.GDN_MDC_CLI_TENANT_ID }}
+        GDN_MDC_CLI_CLIENT_ID: ${{ secrets.GDN_MDC_CLI_CLIENT_ID }}
+        GDN_MDC_CLI_CLIENT_SECRET: ${{ secrets.GDN_MDC_CLI_CLIENT_SECRET }}
       
     - name: Run Defender CLI Scan (Default)
       run: |
