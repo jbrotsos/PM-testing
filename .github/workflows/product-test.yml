@@ -41,7 +41,13 @@ jobs:
 
     - name: List contents of directory
       run: ls -la
-        
+
+    - name: Run Defender Version
+      run: ./defender --version
+
+    - name: Run Defender Help
+      run: ./defender --help
+      
     - name: Run Defender CLI Scan
       run: |
         echo "Running Defender CLI scan..."
@@ -51,11 +57,6 @@ jobs:
         CLI_EXECUTABLE="./defender"
         
         echo "Defender CLI executable: $CLI_EXECUTABLE"
-        
-        # Test if CLI runs (basic help/version check)
-        echo "Testing CLI accessibility..."
-        echo "Defender CLI Help"
-        $CLI_EXECUTABLE --version
 
         # Run the actual scan command
         echo "Running Defender scan command..."
