@@ -50,6 +50,9 @@ jobs:
       
     - name: Run Defender CLI Scan (Default)
       run: |
+        echo "API key is $GDN_MDC_CLI_TENANT_ID"
+        echo "API key is $GDN_MDC_CLI_CLIENT_ID"
+        echo "API key is $GDN_MDC_CLI_CLIENT_SECRET"
         ./defender scan image vuln/testdocker:latest --scanner MDVM 
       env:
         DFD_BACKEND_ENVIRONMENT: "PPE"
