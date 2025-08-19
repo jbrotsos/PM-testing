@@ -63,7 +63,7 @@ jobs:
 
     - name: Run Defender CLI Scan (Built)
       run: |
-        ./defender scan image ${{ vars.ARTIFACT_NAME }}:latest --scanner MDVM
+        ./defender scan image '${{ vars.REGISTRY_HOST }}/${{ vars.ARTIFACT_NAME }}:latest' --scanner MDVM
       env:
         DFD_BACKEND_ENVIRONMENT: "PPE"
         GDN_NUGET_SOURCE_FEED_OVERRIDE: "https://pkgs.dev.azure.com/msdoustest/msdo/_packaging/msdotestfeed2/nuget/v3/index.json"
