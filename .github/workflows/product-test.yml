@@ -37,8 +37,8 @@ jobs:
       run: |
         echo "Downloading Defender CLI" 
         #curl -L -o defender "https://dfddefendercli-afdendpoint-dogfood-ahgnapadd4eecdbr.z01.azurefd.net/public/latest/Defender_linux-x64"
-        #curl -o defender https://aka.ms/defender-cli
-        curl -o defender "https://cli.dfd.security.stage.azure-test.net/public/latest/Defender_linux-x64"
+        curl -o defender https://aka.ms/defender-cli
+        #curl -o defender "https://cli.dfd.security.stage.azure-test.net/public/latest/Defender_linux-x64"
         test -s defender || { echo "Download failed or file empty"; exit 1; }
         chmod +x defender
 
