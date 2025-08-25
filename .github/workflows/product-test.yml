@@ -37,7 +37,7 @@ jobs:
       run: |
         echo "Downloading Defender CLI" 
         #curl -L -o defender "https://dfddefendercli-afdendpoint-dogfood-ahgnapadd4eecdbr.z01.azurefd.net/public/latest/Defender_linux-x64"
-        curl -o defender https://aka.ms/defender-cli/Defender_linux-x64 && chmod +x defender
+        curl -o defender https://aka.ms/defender-cli && chmod +x defender
         chmod +x defender
 
     - name: List contents of directory
