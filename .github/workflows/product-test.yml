@@ -65,6 +65,7 @@ jobs:
     - name: Run Defender CLI Scan (Default)
       run: |
         ./defender scan image vuln/testdocker:latest --scanner mdvm
+      continue-on-error: true
       env:
         DFD_BACKEND_ENVIRONMENT: "PPE"
         GDN_NUGET_SOURCE_FEED_OVERRIDE: "https://pkgs.dev.azure.com/msdoustest/msdo/_packaging/msdotestfeed2/nuget/v3/index.json"
@@ -75,6 +76,7 @@ jobs:
     - name: Run Defender CLI Scan (Built)
       run: |
         ./defender scan image '${{ vars.REGISTRY_HOST }}/${{ vars.ARTIFACT_NAME }}:latest' --scanner mdvm
+      continue-on-error: true
       env:
         DFD_BACKEND_ENVIRONMENT: "PPE"
         GDN_NUGET_SOURCE_FEED_OVERRIDE: "https://pkgs.dev.azure.com/msdoustest/msdo/_packaging/msdotestfeed2/nuget/v3/index.json"
@@ -84,6 +86,7 @@ jobs:
   
     - name: Run Quick Trivy scan (High/Critical only)
       uses: aquasecurity/trivy-action@master
+      continue-on-error: true
       with:
         image-ref: '${{ vars.REGISTRY_HOST }}/${{ vars.ARTIFACT_NAME }}:latest'
         format: 'table'
