@@ -40,5 +40,5 @@ jobs:
         GDN_MDC_CLI_CLIENT_ID: ${{ secrets.GDN_MDC_CLI_CLIENT_ID }}
         GDN_MDC_CLI_CLIENT_SECRET: ${{ secrets.GDN_MDC_CLI_CLIENT_SECRET }}
       with:
-        args: 'image vuln/testdocker:latest --scanner mdvm'
+        args: 'scan image ${{ vars.REGISTRY_HOST }}/${{ vars.ARTIFACT_NAME }}:latest --scanner mdvm'
         
