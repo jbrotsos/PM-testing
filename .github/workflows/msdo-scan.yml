@@ -23,5 +23,5 @@ jobs:
       with:
         tools: 'checkov'
       env:
-         GDN_CHECKOV_TARGETDIRECTORY: /vulnerable-infra
+         GDN_CHECKOV_TARGETDIRECTORY: ${{ github.workspace }}/vulnerable-infra
 
