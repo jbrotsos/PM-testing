@@ -1,6 +1,6 @@
 # Vulnerable Test Application
 
-Test1
+Test2
 
 This is a deliberately vulnerable Node.js application designed for testing container vulnerability scanning tools like Trivy.
 
