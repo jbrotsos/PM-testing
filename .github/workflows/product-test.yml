@@ -59,14 +59,14 @@ jobs:
         GDN_MDC_CLI_CLIENT_ID: ${{ secrets.GDN_MDC_CLI_CLIENT_ID }}
         GDN_MDC_CLI_CLIENT_SECRET: ${{ secrets.GDN_MDC_CLI_CLIENT_SECRET }}
       
-    - name: Run Defender CLI Scan (Default)
-      run: |
-        ./defender scan image vuln/testdocker:latest --scanner mdvm
-      continue-on-error: true
-      env:
-        GDN_MDC_CLI_TENANT_ID: ${{ secrets.GDN_MDC_CLI_TENANT_ID }}
-        GDN_MDC_CLI_CLIENT_ID: ${{ secrets.GDN_MDC_CLI_CLIENT_ID }}
-        GDN_MDC_CLI_CLIENT_SECRET: ${{ secrets.GDN_MDC_CLI_CLIENT_SECRET }}
+   # - name: Run Defender CLI Scan (Default)
+    #  run: |
+    #    ./defender scan image vuln/testdocker:latest --scanner mdvm
+   #   continue-on-error: true
+   #   env:
+    #    GDN_MDC_CLI_TENANT_ID: ${{ secrets.GDN_MDC_CLI_TENANT_ID }}
+    #    GDN_MDC_CLI_CLIENT_ID: ${{ secrets.GDN_MDC_CLI_CLIENT_ID }}
+    #    GDN_MDC_CLI_CLIENT_SECRET: ${{ secrets.GDN_MDC_CLI_CLIENT_SECRET }}
 
     - name: Run Defender CLI Scan (Built)
       run: |
@@ -77,14 +77,14 @@ jobs:
         GDN_MDC_CLI_CLIENT_ID: ${{ secrets.GDN_MDC_CLI_CLIENT_ID }}
         GDN_MDC_CLI_CLIENT_SECRET: ${{ secrets.GDN_MDC_CLI_CLIENT_SECRET }}
   
-    - name: Run Quick Trivy scan (High/Critical only)
-      uses: aquasecurity/trivy-action@master
-      continue-on-error: true
-      with:
-        image-ref: '${{ vars.REGISTRY_HOST }}/${{ vars.ARTIFACT_NAME }}:latest'
-        format: 'table'
-        severity: 'CRITICAL,HIGH'
-        exit-code: '0'  # Don't fail the build, just report
+    #- name: Run Quick Trivy scan (High/Critical only)
+   #   uses: aquasecurity/trivy-action@master
+    #  continue-on-error: true
+   #   with:
+    #    image-ref: '${{ vars.REGISTRY_HOST }}/${{ vars.ARTIFACT_NAME }}:latest'
+    #    format: 'table'
+    #    severity: 'CRITICAL,HIGH'
+    #    exit-code: '0'  # Don't fail the build, just report
 
     - name: Generate Markdown from SARIF (example)
       shell: bash
@@ -121,7 +121,7 @@ jobs:
                    | map("| \(.ruleId) | \(.title|gsub("\\n";" ")) | \(.file):\(.line) | \(.cwe // "—") | \((.help // "")|tostring) |")
                    | join("\n")
                  ) + "\n"
-               end)
+               )
           ' "$SARIF" > pr-critical.md
 
     - name: Find existing sticky comment
