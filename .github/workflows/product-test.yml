@@ -147,3 +147,24 @@ jobs:
           comment-id: ${{ steps.fc.outputs.comment-id }}
           body-path: pr-critical.md
           edit-mode: replace
+
+    - name: DEBUG – show severity sources
+      run: |
+        jq -r '
+          .runs[] as $run
+          | ($run.tool.driver.rules // []) as $rulesArr
+          | reduce $rulesArr[] as $r ({}; .[$r.id] = $r) as $rules
+          | $run.results[]? as $res
+          | ($rules[($res.ruleId // $res.rule?.id // "")] // {}) as $rule
+          | {
+              ruleId: $res.ruleId,
+              res_level: $res.level,
+              res_severity: $res.properties.severity,
+              res_problem_severity: $res.properties["problem.severity"],
+              res_security_severity: $res.properties["security-severity"],
+              rule_level: $rule.defaultConfiguration.level,
+              rule_severity: $rule.properties.severity,
+              rule_security_severity: $rule.properties["security-severity"],
+              tags: ($rule.properties.tags // [])
+            } | @json
+        ' "/home/runner/work/PM-testing/PM-testing/defender.sarif" | head -n 40
