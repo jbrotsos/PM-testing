@@ -84,3 +84,65 @@ jobs:
         format: 'table'
         severity: 'CRITICAL,HIGH'
         exit-code: '0'  # Don't fail the build, just report
+
+    - name: Build Critical Findings Markdown from SARIF
+      shell: bash
+      run: |
+          SARIF="results.sarif"
+
+          # Create a rules index (ruleId -> rule) from each run (optional but helps titles/helpUri)
+          jq -r '
+            def normsev($r):
+              # Treat as "critical" if:
+              # - properties.severity says CRITICAL (common), OR
+              # - security-severity score >= 9 (many tools), OR
+              # - explicit "CRITICAL" in tags (fallback)
+              ( ($r.properties.severity // $r.properties.severityLevel // "") | ascii_upcase ) == "CRITICAL"
+              or (( ($r.properties."security-severity" // $r.properties.securitySeverity // $r.properties.severityScore // empty) | tonumber? ) // -1) >= 9
+              or ( ($r.rule?.properties?.tags // []) | map(ascii_upcase) | any(. == "CRITICAL") );
+
+            # Flatten all runs
+            .runs as $runs
+            | [
+                # Build rules map per run so we can enrich results
+                ($runs[] | ( .tool.driver.rules // [] ) as $rules
+                  | reduce $rules[] as $r ({}; .[$r.id] = $r)
+                ) as $rules_map
+                | .runs[]?.results[]?
+                | . as $res
+                | select( normsev($res) )
+                | {
+                    ruleId:      ($res.ruleId // $res.rule?.id // "unknown"),
+                    title:       ($res.message?.text // "—"),
+                    file:        ($res.locations[0]?.physicalLocation?.artifactLocation?.uri // "—"),
+                    line:        ($res.locations[0]?.physicalLocation?.region?.startLine // 1),
+                    help:        ($res.helpUri // $res.rule?.helpUri // ""),
+                    cwe: (
+                      $res.rule?.properties?.tags // []
+                      | map(select(test("^cwe:", "i")))
+                      | join(", ")
+                    )
+                  }
+              ] as $items
+            | "# 🔴 Critical Findings\n"
+            + (if ($items|length)==0
+               then "_No critical findings found._\n"
+               else
+                 "| Rule | Title | Location | CWE | Help |\n|---|---|---|---|---|\n" +
+                 ( $items
+                   | map("| \(.ruleId) | \(.title|gsub("\\n";" ")) | \(.file):\(.line) | \(.cwe // "—") | \((.help // "")|tostring) |")
+                   | join("\n")
+                 ) + "\n"
+               end)
+          ' "$SARIF" > pr-critical.md
+
+          echo "Generated pr-critical.md:"
+          sed -n '1,120p' pr-critical.md
+
+    - name: Post/Update PR comment with results
+      uses: peter-evans/create-or-update-comment@v4
+      with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: pr-critical.md
+          comment-identifier: SARIF-CRITICAL-FINDINGS
+          edit-mode: replace
