@@ -115,9 +115,7 @@ jobs:
                   }
               ] as $items
             | "# 🔴 Critical Findings\n"
-            + (if ($items|length)==0
-               then "_No critical findings found._\n"
-               else
+            + (
                  "| Rule | Title | Location | CWE | Help |\n|---|---|---|---|---|\n" +
                  ( $items
                    | map("| \(.ruleId) | \(.title|gsub("\\n";" ")) | \(.file):\(.line) | \(.cwe // "—") | \((.help // "")|tostring) |")
