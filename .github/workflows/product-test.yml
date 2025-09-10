@@ -85,30 +85,20 @@ jobs:
         severity: 'CRITICAL,HIGH'
         exit-code: '0'  # Don't fail the build, just report
 
-    - name: Build Critical Findings Markdown from SARIF
+    - name: Generate Markdown from SARIF (example)
       shell: bash
       run: |
-          SARIF="/home/runner/work/PM-testing/PM-testing/defender.sarif"
+          SARIF="results.sarif"
+          # Put or download your SARIF file at $SARIF before this step if needed.
 
-          # Create a rules index (ruleId -> rule) from each run (optional but helps titles/helpUri)
           jq -r '
             def normsev($r):
-              # Treat as "critical" if:
-              # - properties.severity says CRITICAL (common), OR
-              # - security-severity score >= 9 (many tools), OR
-              # - explicit "CRITICAL" in tags (fallback)
               ( ($r.properties.severity // $r.properties.severityLevel // "") | ascii_upcase ) == "CRITICAL"
               or (( ($r.properties."security-severity" // $r.properties.securitySeverity // $r.properties.severityScore // empty) | tonumber? ) // -1) >= 9
               or ( ($r.rule?.properties?.tags // []) | map(ascii_upcase) | any(. == "CRITICAL") );
-
-            # Flatten all runs
             .runs as $runs
             | [
-                # Build rules map per run so we can enrich results
-                ($runs[] | ( .tool.driver.rules // [] ) as $rules
-                  | reduce $rules[] as $r ({}; .[$r.id] = $r)
-                ) as $rules_map
-                | .runs[]?.results[]?
+                .runs[]?.results[]?
                 | . as $res
                 | select( normsev($res) )
                 | {
@@ -119,8 +109,7 @@ jobs:
                     help:        ($res.helpUri // $res.rule?.helpUri // ""),
                     cwe: (
                       $res.rule?.properties?.tags // []
-                      | map(select(test("^cwe:", "i")))
-                      | join(", ")
+                      | map(select(test("^cwe:", "i"))) | join(", ")
                     )
                   }
               ] as $items
@@ -136,13 +125,26 @@ jobs:
                end)
           ' "$SARIF" > pr-critical.md
 
-          echo "Generated pr-critical.md:"
-          sed -n '1,120p' pr-critical.md
-
-    - name: Post/Update PR comment with results
-      uses: peter-evans/create-or-update-comment@v4
+    - name: Find existing sticky comment
+      id: fc
+      uses: peter-evans/find-comment@v3
       with:
           issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '🔴 Critical Findings'   # anchor text to find
+
+    - name: Create comment (if missing)
+      if: steps.fc.outputs.comment-id == ''
+      id: create
+      uses: peter-evans/create-or-update-comment@v4
+      with:
+         issue-number: ${{ github.event.pull_request.number }}
+         body-path: pr-critical.md
+
+    - name: Update comment (if found)
+      if: steps.fc.outputs.comment-id != ''
+      uses: peter-evans/create-or-update-comment@v4
+      with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
           body-path: pr-critical.md
-          comment-identifier: SARIF-CRITICAL-FINDINGS
           edit-mode: replace
