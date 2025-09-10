@@ -95,7 +95,7 @@ jobs:
           jq -r '
             def normsev($r):
               ( ($r.properties.severity // $r.properties.severityLevel // "") | ascii_upcase ) == "CRITICAL"
-              or (( ($r.properties."security-severity" // $r.properties.securitySeverity // $r.properties.severityScore // empty) | tonumber? ) // -1) >= 9
+              or (( ($r.properties."security-severity" // $r.properties.securitySeverity // $r.properties.severityScore // empty) | tonumber? ) // -1) >= 7
               or ( ($r.rule?.properties?.tags // []) | map(ascii_upcase) | any(. == "CRITICAL") );
             .runs as $runs
             | [
