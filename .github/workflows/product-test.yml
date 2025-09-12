@@ -76,6 +76,9 @@ jobs:
         GDN_MDC_CLI_TENANT_ID: ${{ secrets.GDN_MDC_CLI_TENANT_ID }}
         GDN_MDC_CLI_CLIENT_ID: ${{ secrets.GDN_MDC_CLI_CLIENT_ID }}
         GDN_MDC_CLI_CLIENT_SECRET: ${{ secrets.GDN_MDC_CLI_CLIENT_SECRET }}
+
+    - name: Pretty print SARIF
+      run: jq . defender.sarif
   
     #- name: Run Quick Trivy scan (High/Critical only)
    #   uses: aquasecurity/trivy-action@master
@@ -90,7 +93,6 @@ jobs:
       if: github.event_name == 'pull_request'
       uses: actions/github-script@v7
       with:
-        run: jq . defender.sarif
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
           const fs = require('fs');
