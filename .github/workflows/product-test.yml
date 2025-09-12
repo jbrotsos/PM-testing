@@ -86,85 +86,106 @@ jobs:
     #    severity: 'CRITICAL,HIGH'
     #    exit-code: '0'  # Don't fail the build, just report
 
-    - name: Generate Markdown from SARIF (example)
-      shell: bash
-      run: |
-          SARIF="/home/runner/work/PM-testing/PM-testing/defender.sarif"
-          # Put or download your SARIF file at $SARIF before this step if needed.
-
-          jq -r '
-            def normsev($r):
-              ( ($r.properties.severity // $r.properties.severityLevel // "") | ascii_upcase ) == "CRITICAL"
-              or (( ($r.properties."security-severity" // $r.properties.securitySeverity // $r.properties.severityScore // empty) | tonumber? ) // -1) >= 7
-              or ( ($r.rule?.properties?.tags // []) | map(ascii_upcase) | any(. == "CRITICAL") );
-            .runs as $runs
-            | [
-                .runs[]?.results[]?
-                | . as $res
-                | select( normsev($res) )
-                | {
-                    ruleId:      ($res.ruleId // $res.rule?.id // "unknown"),
-                    title:       ($res.message?.text // "—"),
-                    file:        ($res.locations[0]?.physicalLocation?.artifactLocation?.uri // "—"),
-                    line:        ($res.locations[0]?.physicalLocation?.region?.startLine // 1),
-                    help:        ($res.helpUri // $res.rule?.helpUri // ""),
-                    cwe: (
-                      $res.rule?.properties?.tags // []
-                      | map(select(test("^cwe:", "i"))) | join(", ")
-                    )
-                  }
-              ] as $items
-            | "# 🔴 Critical Findings\n"
-            + (
-                 "| Rule | Title | Location | CWE | Help |\n|---|---|---|---|---|\n" +
-                 ( $items
-                   | map("| \(.ruleId) | \(.title|gsub("\\n";" ")) | \(.file):\(.line) | \(.cwe // "—") | \((.help // "")|tostring) |")
-                   | join("\n")
-                 ) + "\n"
-               )
-          ' "$SARIF" > pr-critical.md
-
-    - name: Find existing sticky comment
-      id: fc
-      uses: peter-evans/find-comment@v3
+    - name: Summarize SARIF and comment on PR
+      uses: actions/github-script@v7
+      if: github.event_name == 'pull_request'
       with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: 'github-actions[bot]'
-          body-includes: '🔴 Critical Findings'   # anchor text to find
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
 
-    - name: Create comment (if missing)
-      if: steps.fc.outputs.comment-id == ''
-      id: create
-      uses: peter-evans/create-or-update-comment@v4
-      with:
-         issue-number: ${{ github.event.pull_request.number }}
-         body-path: pr-critical.md
+            const sarifPath = './defender.sarif'; // <-- your SARIF file
+            if (!fs.existsSync(sarifPath)) {
+              core.setFailed(`SARIF file not found at: ${sarifPath}`);
+              return;
+            }
 
-    - name: Update comment (if found)
-      if: steps.fc.outputs.comment-id != ''
-      uses: peter-evans/create-or-update-comment@v4
-      with:
-          comment-id: ${{ steps.fc.outputs.comment-id }}
-          body-path: pr-critical.md
-          edit-mode: replace
+            const sarif = JSON.parse(fs.readFileSync(sarifPath, 'utf8'));
 
-    - name: DEBUG – show severity sources
-      run: |
-        jq -r '
-          .runs[] as $run
-          | ($run.tool.driver.rules // []) as $rulesArr
-          | reduce $rulesArr[] as $r ({}; .[$r.id] = $r) as $rules
-          | $run.results[]? as $res
-          | ($rules[($res.ruleId // $res.rule?.id // "")] // {}) as $rule
-          | {
-              ruleId: $res.ruleId,
-              res_level: $res.level,
-              res_severity: $res.properties.severity,
-              res_problem_severity: $res.properties["problem.severity"],
-              res_security_severity: $res.properties["security-severity"],
-              rule_level: $rule.defaultConfiguration.level,
-              rule_severity: $rule.properties.severity,
-              rule_security_severity: $rule.properties["security-severity"],
-              tags: ($rule.properties.tags // [])
-            } | @json
-        ' "/home/runner/work/PM-testing/PM-testing/defender.sarif" | head -n 40
+            const normalizeSeverity = (result) => {
+              const props = result.properties || {};
+              const secsev = (props['security-severity'] || '').toString().toLowerCase();
+              const sev = (props['severity'] || '').toString().toLowerCase();
+              const level = (result.level || '').toString().toLowerCase();
+              const num = parseFloat(secsev);
+
+              if (!isNaN(num)) {
+                if (num >= 9) return 'Critical';
+                if (num >= 7) return 'High';
+                if (num >= 4) return 'Medium';
+                if (num > 0) return 'Low';
+              }
+              const text = secsev || sev || level;
+              if (['critical'].includes(text)) return 'Critical';
+              if (['high', 'error'].includes(text)) return 'High';
+              if (['medium', 'warning'].includes(text)) return 'Medium';
+              if (['low', 'note'].includes(text)) return 'Low';
+              return 'Info';
+            };
+
+            const runs = sarif.runs || [];
+            const totals = { Critical:0, High:0, Medium:0, Low:0, Info:0, All:0 };
+
+            for (const run of runs) {
+              const results = run.results || [];
+              for (const r of results) {
+                const sev = normalizeSeverity(r);
+                totals[sev] += 1;
+                totals.All += 1;
+              }
+            }
+
+            const headerTag = '<!-- DEFENDER_SARIF_SUMMARY -->';
+            const table = `
+            | Severity | Count |
+            |----------|------:|
+            | Critical | ${totals.Critical} |
+            | High     | ${totals.High} |
+            | Medium   | ${totals.Medium} |
+            | Low      | ${totals.Low} |
+            | Info     | ${totals.Info} |
+            | **All**  | **${totals.All}** |
+            `;
+
+            const body = `
+            ${headerTag}
+            ### Security Scan Summary (defender.sarif)
+
+            ${table}
+
+            > _This comment updates automatically on each run._
+            `;
+
+            const { context } = github;
+            const issue_number = context.payload.pull_request?.number || context.issue?.number;
+            if (!issue_number) {
+              core.setFailed('No pull request context found.');
+              return;
+            }
+
+            const existing = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number,
+              per_page: 100
+            });
+
+            const prev = existing.data.find(c => c.body && c.body.includes(headerTag));
+            if (prev) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: prev.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number,
+                body
+              });
+            }
+
+    
