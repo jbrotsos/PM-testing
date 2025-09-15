@@ -36,14 +36,7 @@ jobs:
         
     - name: Download Defender CLI
       run: |
-        echo "Downloading Defender CLI" 
-        #curl -L -o defender "https://dfddefendercli-afdendpoint-dogfood-ahgnapadd4eecdbr.z01.azurefd.net/public/latest/Defender_linux-x64"
-        curl -L -o defender "https://aka.ms/defender-cli_linux-x64"
-        test -s defender || { echo "Download failed or file empty"; exit 1; }
-        chmod +x defender
-
-    - name: List contents of directory
-      run: ls -la
+       curl -L -o defender "https://aka.ms/defender-cli_linux-x64" && chmod +x defender
 
     - name: Run Defender Version
       run: ./defender --version
