@@ -52,18 +52,9 @@ jobs:
         GDN_MDC_CLI_CLIENT_ID: ${{ secrets.GDN_MDC_CLI_CLIENT_ID }}
         GDN_MDC_CLI_CLIENT_SECRET: ${{ secrets.GDN_MDC_CLI_CLIENT_SECRET }}
       
-   # - name: Run Defender CLI Scan (Default)
-    #  run: |
-    #    ./defender scan image vuln/testdocker:latest --scanner mdvm
-   #   continue-on-error: true
-   #   env:
-    #    GDN_MDC_CLI_TENANT_ID: ${{ secrets.GDN_MDC_CLI_TENANT_ID }}
-    #    GDN_MDC_CLI_CLIENT_ID: ${{ secrets.GDN_MDC_CLI_CLIENT_ID }}
-    #    GDN_MDC_CLI_CLIENT_SECRET: ${{ secrets.GDN_MDC_CLI_CLIENT_SECRET }}
-
-    - name: Run Defender CLI Scan (Built)
+    - name: Run Defender CLI Scan (Default)
       run: |
-        ./defender scan image '${{ vars.REGISTRY_HOST }}/${{ vars.ARTIFACT_NAME }}:latest' --scanner mdvm
+        ./defender scan image vuln/testdocker:latest --scanner mdvm
       continue-on-error: true
       env:
         GDN_MDC_CLI_TENANT_ID: ${{ secrets.GDN_MDC_CLI_TENANT_ID }}
@@ -75,6 +66,15 @@ jobs:
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: defender.sarif
+
+    - name: Run Defender CLI Scan (Built)
+      run: |
+        ./defender scan image '${{ vars.REGISTRY_HOST }}/${{ vars.ARTIFACT_NAME }}:latest' --scanner mdvm
+      continue-on-error: true
+      env:
+        GDN_MDC_CLI_TENANT_ID: ${{ secrets.GDN_MDC_CLI_TENANT_ID }}
+        GDN_MDC_CLI_CLIENT_ID: ${{ secrets.GDN_MDC_CLI_CLIENT_ID }}
+        GDN_MDC_CLI_CLIENT_SECRET: ${{ secrets.GDN_MDC_CLI_CLIENT_SECRET }}
 
     - name: Pretty print SARIF
       run: jq . defender.sarif
