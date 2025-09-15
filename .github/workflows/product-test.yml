@@ -65,7 +65,7 @@ jobs:
       if: always()
       uses: github/codeql-action/upload-sarif@v3
       with:
-        sarif_file: defender.sarif
+        sarif_file: mdvm.sarif
 
     - name: Run Defender CLI Scan (Built)
       run: |
