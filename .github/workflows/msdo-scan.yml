@@ -21,6 +21,7 @@ jobs:
          - name: KICS Github Action
            uses: Checkmarx/kics-github-action@v2.1.13
            with:
+               path: vulnerable-infra
                enable_comments: true
                output_formats: 'json,sarif'
                output_path: 'kics-results'
