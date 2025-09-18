@@ -1,0 +1,50 @@
+name: MSDO Security Scan
+
+# Workflow disabled - uncomment to re-enable
+on:
+   push:
+     branches: [ main, master ]
+   pull_request:
+     branches: [ main, master ]
+   workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+   msdo-scan:
+      runs-on: ubuntu-latest
+
+      steps:
+         - name: KICS Github Action
+           uses: Checkmarx/kics-github-action@v2.1.13
+           with:
+               enable_comments: true
+               output_formats: 'json,sarif'
+               output_path: 'kics-results'
+
+         - name: Upload SARIF to Code Scanning
+           uses: github/codeql-action/upload-sarif@v3
+           with:
+                sarif_file: kics-results/results.sarif
+         
+         - name: Run Microsoft Security DevOps Action
+           uses: microsoft/security-devops-action@latest
+           with:
+              tools: 'checkov'
+              source-root: vulnerable-infra
+              output-path: results
+           env:
+              GDN_CHECKOV_TARGETDIRECTORY: ${{ github.workspace }}/vulnerable-infra
+
+               # Upload SARIF results to GitHub Security tab
+         - name: Upload SARIF to Code Scanning
+           uses: github/codeql-action/upload-sarif@v3
+           with:
+             sarif_file: results/msdo.sarif
+
+
+   
+
