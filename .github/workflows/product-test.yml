@@ -38,6 +38,15 @@ jobs:
       run: |
        curl -L -o defender "https://aka.ms/defender-cli_linux-x64" && chmod +x defender
 
+    - name: Run Defender CLI Scan (Built)
+      run: |
+        ./defender scan image '${{ vars.REGISTRY_HOST }}/${{ vars.ARTIFACT_NAME }}:latest' --scanner mdvm
+      continue-on-error: true
+      env:
+        GDN_MDC_CLI_TENANT_ID: ${{ secrets.GDN_MDC_CLI_TENANT_ID }}
+        GDN_MDC_CLI_CLIENT_ID: ${{ secrets.GDN_MDC_CLI_CLIENT_ID }}
+        GDN_MDC_CLI_CLIENT_SECRET: ${{ secrets.GDN_MDC_CLI_CLIENT_SECRET }}
+
     - name: Run Defender Version
       run: ./defender --version
       env:
@@ -51,7 +60,14 @@ jobs:
         GDN_MDC_CLI_TENANT_ID: ${{ secrets.GDN_MDC_CLI_TENANT_ID }}
         GDN_MDC_CLI_CLIENT_ID: ${{ secrets.GDN_MDC_CLI_CLIENT_ID }}
         GDN_MDC_CLI_CLIENT_SECRET: ${{ secrets.GDN_MDC_CLI_CLIENT_SECRET }}
-      
+
+    - name: Upload SARIF to Code Scanning
+      if: always()
+      uses: github/codeql-action/upload-sarif@v3
+      continue-on-error: true
+      with:
+        sarif_file: defender.sarif
+        
     - name: Run Defender CLI Scan (Default)
       run: |
         ./defender scan image vuln/testdocker:latest --scanner mdvm
@@ -61,21 +77,6 @@ jobs:
         GDN_MDC_CLI_CLIENT_ID: ${{ secrets.GDN_MDC_CLI_CLIENT_ID }}
         GDN_MDC_CLI_CLIENT_SECRET: ${{ secrets.GDN_MDC_CLI_CLIENT_SECRET }}
 
-    - name: Upload SARIF to Code Scanning
-      if: always()
-      uses: github/codeql-action/upload-sarif@v3
-      continue-on-error: true
-      with:
-        sarif_file: mdvm.sarif
-
-    - name: Run Defender CLI Scan (Built)
-      run: |
-        ./defender scan image '${{ vars.REGISTRY_HOST }}/${{ vars.ARTIFACT_NAME }}:latest' --scanner mdvm
-      continue-on-error: true
-      env:
-        GDN_MDC_CLI_TENANT_ID: ${{ secrets.GDN_MDC_CLI_TENANT_ID }}
-        GDN_MDC_CLI_CLIENT_ID: ${{ secrets.GDN_MDC_CLI_CLIENT_ID }}
-        GDN_MDC_CLI_CLIENT_SECRET: ${{ secrets.GDN_MDC_CLI_CLIENT_SECRET }}
 
     - name: Pretty print SARIF
       run: jq . defender.sarif
