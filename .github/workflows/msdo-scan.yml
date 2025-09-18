@@ -24,7 +24,7 @@ jobs:
          - name: KICS Github Action
            uses: Checkmarx/kics-github-action@v2.1.13
            with:
-               path: vulnerable-infra
+               path: vulnerable-infra,vulnerable-terraform
                token: ${{ secrets.GITHUB_TOKEN }}
                enable_comments: true
                output_formats: 'json,sarif'
