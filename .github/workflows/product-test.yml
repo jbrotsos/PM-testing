@@ -29,7 +29,7 @@ jobs:
       with:
         context: .
         push: false
-        tags: ${{ vars.REGISTRY_HOST }}/${{ vars.ARTIFACT_NAME }}:latest
+        tags: 'localhost/vulnerable-app:latest'
         load: true
         cache-from: type=gha
         cache-to: type=gha,mode=max
@@ -40,7 +40,7 @@ jobs:
 
     - name: Run Defender CLI Scan (Built)
       run: |
-        ./defender scan image '${{ vars.REGISTRY_HOST }}/${{ vars.ARTIFACT_NAME }}:latest' --scanner mdvm
+        ./defender scan image 'localhost/vulnerable-app:latest' --scanner mdvm
       continue-on-error: true
       env:
         GDN_MDC_CLI_TENANT_ID: ${{ secrets.GDN_MDC_CLI_TENANT_ID }}
@@ -85,7 +85,7 @@ jobs:
       uses: aquasecurity/trivy-action@master
       continue-on-error: true
       with:
-        image-ref: '${{ vars.REGISTRY_HOST }}/${{ vars.ARTIFACT_NAME }}:latest'
+        image-ref: 'localhost/vulnerable-app:latest'
         format: 'sarif'
         severity: 'CRITICAL,HIGH'
         exit-code: '0'  # Don't fail the build, just report
