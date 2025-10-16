@@ -23,7 +23,8 @@ jobs:
            
          - name: Run Opengrep SAST scan
            run: |
-            wget https://github.com/opengrep/opengrep/releases/download/latest/opengrep_manylinux_x86 -O opengrep
+            #wget https://github.com/opengrep/opengrep/releases/download/latest/opengrep_manylinux_x86 -O opengrep
+            wget https://github.com/opengrep/opengrep/releases/download/v1.10.2/opengrep_manylinux_x86 -O opengrep
             chmod +x opengrep
             ./opengrep ci --sarif --sarif-output opengrep_report.sarif --config auto --supress-errors
             shell: bash -l {0}
