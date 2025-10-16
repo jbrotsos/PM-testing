@@ -27,7 +27,6 @@ jobs:
             wget https://github.com/opengrep/opengrep/releases/download/v1.10.2/opengrep_manylinux_x86 -O opengrep
             chmod +x opengrep
             ./opengrep ci --sarif --sarif-output opengrep_report.sarif --config auto --suppress-errors
-            shell: bash -l {0}
 
          - name: Upload SARIF to Code Scanning
            uses: github/codeql-action/upload-sarif@v3
