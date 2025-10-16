@@ -39,8 +39,8 @@ jobs:
            uses: microsoft/security-devops-action@latest
            id: msdo
            with:
-              tools: 'checkov'
-              source-root: vulnerable-infra
+              tools: 'checkov,eslint'
+              source-root: vulnerable-infra, vulnerable-js
               output-path: results
            env:
               GDN_CHECKOV_TARGETDIRECTORY: ${{ github.workspace }}/vulnerable-infra
