@@ -40,10 +40,9 @@ jobs:
            id: msdo
            with:
               tools: 'checkov,eslint'
-              source-root: vulnerable-infra, vulnerable-js
-              output-path: results
            env:
               GDN_CHECKOV_TARGETDIRECTORY: ${{ github.workspace }}/vulnerable-infra
+              GDN_ESLINT_TARGETS: ${{ github.workspace }}/vulnerable-js
 
                # Upload SARIF results to GitHub Security tab
          - name: Upload SARIF to Code Scanning
