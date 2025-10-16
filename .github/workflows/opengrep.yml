@@ -1,4 +1,4 @@
-name: MSDO Security Scan
+name: Opengrep
 
 # Workflow disabled - uncomment to re-enable
 on:
