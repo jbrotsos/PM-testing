@@ -23,19 +23,6 @@ jobs:
       
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3      
-        
-    - name: Download Defender CLI
-      run: |
-       curl -L -o defender "https://aka.ms/defender-cli_linux-x64" && chmod +x defender
-
-    - name: Run Defender CLI Scan (Built)
-      run: |
-        ./defender scan image 'localhost/vulnerable-app:latest' --scanner mdvm
-      continue-on-error: true
-      env:
-        GDN_MDC_CLI_TENANT_ID: ${{ secrets.GDN_MDC_CLI_TENANT_ID }}
-        GDN_MDC_CLI_CLIENT_ID: ${{ secrets.GDN_MDC_CLI_CLIENT_ID }}
-        GDN_MDC_CLI_CLIENT_SECRET: ${{ secrets.GDN_MDC_CLI_CLIENT_SECRET }}
 
     - name: Build Docker image
       uses: docker/build-push-action@v5
@@ -46,6 +33,19 @@ jobs:
         load: true
         cache-from: type=gha
         cache-to: type=gha,mode=max
+        
+    - name: Download Defender CLI
+      run: |
+       curl -L -o defender "https://aka.ms/defender-cli_linux-x64" && chmod +x defender
+
+    - name: Run Defender CLI Scan (Built)
+      run: |
+        ./defender scan image 'localhost/vulnerable-app:latest' 
+      continue-on-error: true
+      env:
+        GDN_MDC_CLI_TENANT_ID: ${{ secrets.GDN_MDC_CLI_TENANT_ID }}
+        GDN_MDC_CLI_CLIENT_ID: ${{ secrets.GDN_MDC_CLI_CLIENT_ID }}
+        GDN_MDC_CLI_CLIENT_SECRET: ${{ secrets.GDN_MDC_CLI_CLIENT_SECRET }}
 
     - name: Upload SARIF to Code Scanning
       if: always()
